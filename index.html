@@ -1,0 +1,1378 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Jazz's Lyric Snips</title>
+<link rel="icon" href="static/icon.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital@1&family=Jost:wght@700&family=Special+Elite&family=Figtree:wght@600;700&family=Arimo:wght@700&display=swap">
+<style>
+@font-face { font-family: "DotGothic16"; src: url("fonts/DotGothic16-Regular.ttf"); }
+@font-face { font-family: "Px437 IBM VGA 8x16"; src: url("fonts/Px437_IBM_VGA_8x16.ttf"); }
+:root {
+  /* everything is sized in rem, so this one line scales the whole app to the window */
+  font-size: clamp(11px, min(1.11vw, 1.62vh), 20px);
+  --bg: #0c0c0d; --panel: #151517; --panel2: #1d1d20; --line: #2a2a2e; --text: #f2f0f1; --dim: #96949b;
+  --pink: #ffb3d4; --yellow: #fff1a6; --neon: #39ff88;
+  --accent: var(--pink); --accent2: var(--yellow); --ok: var(--neon); --warn: var(--yellow);
+  --pink-soft: rgba(255,179,212,.10); --pink-mid: rgba(255,179,212,.16);
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 0.9375rem/1.45 -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif; }
+header { display: flex; align-items: center; gap: 1.75rem; padding: 1.125rem 1.75rem; border-bottom: 1px solid var(--line); position: sticky; top: 0; background: rgba(12,12,13,.92); backdrop-filter: blur(0.5rem); z-index: 5; }
+.brand { font-family: "DotGothic16", monospace; font-size: 1.625rem; letter-spacing: 2px; cursor: pointer; white-space: nowrap; text-shadow: 0 0 0.625rem rgba(255,179,212,.35); }
+.brand b { color: var(--pink); font-weight: normal; }
+.brand .j { color: var(--yellow); }
+.brand { display: flex; align-items: center; gap: 0.625rem; }
+.brand img { height: 1.375rem; width: auto; display: block; }
+.brand .title-img { height: 3.144rem; width: auto; margin: -0.75rem; }
+@media (max-width: 860px) { .brand .title-img { height: 2.3rem; margin: -0.55rem; } }
+.brand .bt { display: flex; flex-direction: column; line-height: 1.1; }
+.brand .excl { display: none; font: 500 0.6875rem/1.3 -apple-system, BlinkMacSystemFont, sans-serif; letter-spacing: .4px; color: var(--dim); text-shadow: none; margin-top: 0.1875rem; }
+body.ed-personal .brand .excl { display: block; }
+nav { display: flex; gap: 0.375rem; align-items: center; }
+nav button { display: inline-flex; align-items: center; gap: 0.5rem; white-space: nowrap; line-height: 1; background: none; border: 0; color: var(--dim); font: inherit; padding: 0.375rem 1rem 0.375rem 0.5rem; border-radius: 62.4375rem; cursor: pointer; }
+nav button .n { position: relative; flex: 0 0 1.75rem; display: grid; place-items: center; width: 1.75rem; height: 1.75rem; margin: 0; line-height: 1; padding-top: 1px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath fill='%23fff1a6' d='M50 0C54 32 68 46 100 50C68 54 54 68 50 100C46 68 32 54 0 50C32 46 46 32 50 0Z'/%3E%3C/svg%3E") center / contain no-repeat; color: #141414; font-size: 0.6875rem; font-weight: 800; opacity: .75; transition: opacity .2s, filter .2s; }
+nav button:hover .n { opacity: 1; }
+nav button.on .n { opacity: 1; filter: drop-shadow(0 0 0.375rem rgba(255,241,166,.55)); }
+nav button.done .n { opacity: 1; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath fill='%23ffb3d4' d='M50 0C54 32 68 46 100 50C68 54 54 68 50 100C46 68 32 54 0 50C32 46 46 32 50 0Z'/%3E%3C/svg%3E"); }  /* finished steps turn pink */
+nav button.done.on .n { filter: drop-shadow(0 0 0.375rem rgba(255,179,212,.6)); }
+nav button.on { color: var(--text); background: var(--panel2); box-shadow: inset 0 -2px 0 var(--pink); }
+
+.modepill { margin-left: auto; background: var(--panel2); border: 1px solid var(--line); color: var(--dim); border-radius: 62.4375rem; padding: 0.4375rem 0.875rem; font: inherit; font-size: 0.8125rem; cursor: pointer; }
+.modepill b { color: var(--yellow); font-weight: 600; }
+main { max-width: 73.75rem; margin: 0 auto; padding: 1.75rem; }
+section[data-tab] { display: none; }
+section[data-tab].on { display: block; }
+h2 { font-weight: 600; font-size: 1.25rem; margin: 0 0 0.25rem; }
+.sub { color: var(--dim); margin: 0 0 1.375rem; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 0.875rem; padding: 1.125rem 1.25rem; margin-bottom: 1rem; }
+.row { display: flex; align-items: center; gap: 0.875rem; }
+.row .grow { flex: 1; min-width: 0; }
+.label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: var(--dim); margin-bottom: 0.375rem; }
+.path { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.path.empty { color: var(--dim); font-style: italic; }
+.note { color: var(--dim); font-size: 0.8125rem; }
+.note.good { color: var(--ok); }
+.note.bad { color: var(--warn); }
+.btn { background: var(--panel2); color: var(--text); border: 1px solid var(--line); padding: 0.5625rem 1rem; border-radius: 0.625rem; font: inherit; cursor: pointer; white-space: nowrap; }
+.btn:hover { border-color: #46464c; }
+.btn.primary { background: linear-gradient(135deg, var(--pink), var(--yellow)); border: 0; color: #141414; font-weight: 700; }
+.btn.primary:hover { box-shadow: 0 0 0 2px var(--neon); }
+.btn.big { padding: 0.8125rem 1.625rem; font-size: 1rem; border-radius: 0.75rem; }
+.btn.small { padding: 0.375rem 0.75rem; font-size: 0.8125rem; }
+.btn:disabled { opacity: .45; cursor: default; }
+textarea { width: 100%; min-height: 22.5rem; background: var(--bg); color: var(--text); border: 1px solid var(--line); border-radius: 0.625rem; padding: 0.875rem; font: 0.9375rem/1.6 -apple-system, sans-serif; resize: vertical; }
+.next { display: flex; justify-content: flex-end; margin-top: 0.5rem; }
+[data-mode] { display: none !important; }
+body.m-clips [data-mode~="clips"], body.m-performance [data-mode~="performance"] { display: block !important; }
+body.m-clips .row[data-mode~="clips"], body.m-performance .row[data-mode~="performance"] { display: flex !important; }
+body.m-clips span[data-mode~="clips"], body.m-performance span[data-mode~="performance"] { display: inline !important; }
+
+/* mode chooser */
+.modes { display: grid; grid-template-columns: 1fr 1fr; gap: 1.125rem; margin-top: 0.625rem; }
+.mode { text-align: left; background: var(--panel); border: 1px solid var(--line); border-radius: 1.125rem; padding: 1.625rem; color: var(--text); font: inherit; cursor: pointer; transition: border-color .15s, transform .15s; }
+.mode:hover { border-color: var(--accent); transform: translateY(-2px); }
+.mode.on { border-color: var(--accent); background: var(--pink-soft); }
+.mode .ic { font-size: 2.125rem; }
+.mode h3 { margin: 0.625rem 0 0.375rem; font-size: 1.1875rem; }
+.mode p { margin: 0; color: var(--dim); }
+
+/* sync */
+.sync { display: grid; grid-template-columns: 1fr 20.625rem; gap: 1.375rem; align-items: start; }
+.lines { position: relative; max-height: calc(100vh - 14.375rem); overflow-y: auto; padding: 0.375rem; }
+.lines::before, .lines::after { content: ""; display: block; height: 30vh; }  /* room so the first and last lines can sit in the middle */
+.ln { display: grid; grid-template-columns: 2.5rem 1fr auto; align-items: center; gap: 0.625rem; padding: 0.4375rem 0.625rem; border-radius: 0.5625rem; cursor: pointer; border: 1px solid transparent; transition: padding .15s, background .15s; }
+.ln .x { transition: font-size .15s, color .15s; }
+.ln:hover { background: var(--panel2); }
+.ln .i { color: var(--dim); font-size: 0.75rem; text-align: right; }
+.ln .t { font-variant-numeric: tabular-nums; color: var(--dim); font-size: 0.8125rem; display: flex; gap: 0.25rem; align-items: center; }
+.ln .t button { opacity: 0; background: var(--panel2); border: 1px solid var(--line); color: var(--text); border-radius: 0.375rem; width: 1.375rem; height: 1.375rem; cursor: pointer; font-size: 0.75rem; padding: 0; }
+.ln:hover .t button { opacity: 1; }
+.ln.timed .t span { color: var(--neon); }
+.ln.cur { border-color: var(--accent); background: var(--pink-soft); padding: 0.875rem 0.75rem; margin: 0.375rem 0; }
+.ln.cur .x { font-size: 1.625rem; font-weight: 700; color: #fff; line-height: 1.25; }
+.ln.cur .i { font-size: 0.875rem; }
+.ln.cur .i::before { content: "▶ "; color: var(--accent); }
+.ln.showing .x { color: #fff; font-weight: 600; }
+.ln .end { color: var(--warn); font-size: 0.6875rem; margin-left: 0.25rem; }
+.gap { height: 0.75rem; }
+.phone { position: sticky; top: 5.625rem; }
+.screen { aspect-ratio: 9/16; width: 100%; border-radius: 1.375rem; background: radial-gradient(120% 80% at 50% 30%, #232326, #09090a 70%); border: 1px solid var(--line); position: relative; overflow: hidden; display: grid; place-items: center; }
+.screen video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.screen { container-type: inline-size; }
+.lyric { position: absolute; left: 10%; right: 10%; text-align: center; color: #fff; z-index: 2; line-height: 1.3;
+  font-size: calc(var(--base, 80) / 10.8 * var(--mult, 1) * 1cqw); top: 50%; transform: translateY(-50%); }
+.lyric.pos-top { top: 15.6%; transform: none; }
+.lyric.pos-bottom { top: auto; bottom: 29%; transform: none; }
+.lyric.sz-small { --mult: .8; } .lyric.sz-large { --mult: 1.25; }
+.lyric.s-whisper { --base: 86; font-family: Baskerville, serif; font-style: italic; text-transform: lowercase; }
+.lyric.s-bold { --base: 82; font-family: Futura, sans-serif; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; }
+.lyric.s-typewriter { --base: 68; font-family: "American Typewriter", Courier, monospace; text-transform: lowercase; }
+.lyric.s-clean { --base: 66; font-family: "Avenir Next", sans-serif; font-weight: 600; }
+.lyric.s-arial { --base: 80; font-family: Arial, sans-serif; font-weight: 700; }
+.lyric.s-led { --base: 86; font-family: "DotGothic16", monospace; text-transform: uppercase; letter-spacing: .08em; }
+.lyric.s-dos { --base: 80; font-family: "Px437 IBM VGA 8x16", monospace; }
+.lyric.fx-shadow span { text-shadow: 0 0 .25em var(--halo), 0 0 .08em var(--halo); }
+.lyric.fx-glow span { text-shadow: 0 0 .3em var(--tc), 0 0 .08em var(--tc); }
+.lyric.fx-outline span { -webkit-text-stroke: .14em var(--halo-solid); paint-order: stroke fill; }
+.lyric.fx-box span { background: var(--boxc); padding: .06em .3em; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
+.controls { margin-top: 0.75rem; }
+.bar { height: 0.5rem; background: var(--panel2); border-radius: 0.25rem; position: relative; cursor: pointer; margin: 0.625rem 0 0.5rem; }
+.bar .fill { position: absolute; inset: 0 auto 0 0; background: var(--neon); border-radius: 0.25rem; }
+.bar .tick { position: absolute; top: -0.1875rem; width: 1px; height: 0.875rem; background: rgba(255,255,255,.35); }
+.times { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--dim); font-variant-numeric: tabular-nums; }
+.keys { margin-top: 0.875rem; font-size: 0.8125rem; color: var(--dim); display: grid; grid-template-columns: auto 1fr; gap: 0.375rem 0.625rem; align-items: center; }
+kbd { background: var(--panel2); border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 0.375rem; padding: 1px 0.5rem; font: 0.75rem -apple-system, sans-serif; color: var(--text); text-align: center; }
+select { background: var(--panel2); color: var(--text); border: 1px solid var(--line); border-radius: 0.5rem; padding: 0.375rem 0.5rem; font: inherit; }
+
+/* make */
+.make { display: grid; grid-template-columns: 1fr 21.25rem; gap: 1.375rem; align-items: start; }
+canvas { width: 100%; height: clamp(4rem, 13vh, 6.875rem); display: block; cursor: ew-resize; border-radius: 0.5rem; background: var(--bg); touch-action: none; }
+.dual { position: relative; height: 1.75rem; margin: 0.75rem 0.5625rem 2px; }
+.dual .track { position: absolute; left: 0; right: 0; top: 0.6875rem; height: 0.375rem; border-radius: 0.1875rem; background: var(--panel2); }
+.dual .sel { position: absolute; top: 0.6875rem; height: 0.375rem; border-radius: 0.1875rem; background: var(--accent); }
+.dual input { position: absolute; left: -0.5625rem; width: calc(100% + 1.125rem); top: 0; height: 1.75rem; margin: 0; -webkit-appearance: none; appearance: none; background: none; pointer-events: none; }
+.dual input::-webkit-slider-thumb { -webkit-appearance: none; pointer-events: auto; width: 1.125rem; height: 1.125rem; border-radius: 50%; background: #fff; border: 0.1875rem solid var(--accent); cursor: grab; }
+.dual input::-moz-range-thumb { pointer-events: auto; width: 0.875rem; height: 0.875rem; border-radius: 50%; background: #fff; border: 0.1875rem solid var(--accent); cursor: grab; }
+.quick { display: inline-flex; gap: 0.3rem; align-items: center; }
+.chip.small { padding: 0.3rem 0.65rem; font-size: 0.8125rem; }
+.rangeinfo { display: flex; gap: 1.125rem; align-items: baseline; font-variant-numeric: tabular-nums; flex-wrap: wrap; }
+.rangeinfo b { font-size: 1.125rem; font-weight: 600; }
+.chips { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.chip { background: var(--panel2); border: 1px solid var(--line); color: var(--text); padding: 0.5rem 0.875rem; border-radius: 62.4375rem; cursor: pointer; font: inherit; font-size: 0.875rem; }
+.chip small { color: var(--dim); margin-left: 0.25rem; }
+.chip.on { border-color: var(--accent); background: var(--pink-mid); }
+.opt { margin-bottom: 1.125rem; }
+.opt:last-child { margin-bottom: 0; }
+.swatches { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; }
+.sw { width: 1.75rem; height: 1.75rem; border-radius: 50%; border: 2px solid var(--line); cursor: pointer; padding: 0; }
+.sw.on { outline: 2px solid var(--neon); outline-offset: 2px; }
+input[type=color] { width: 2.5rem; height: 1.875rem; border: 1px solid var(--line); border-radius: 0.5rem; background: var(--panel2); padding: 2px; cursor: pointer; }
+input[type=range].plain { width: 100%; accent-color: var(--yellow); }
+.progress { height: 0.375rem; background: var(--panel2); border-radius: 0.1875rem; overflow: hidden; margin: 0.75rem 0 0.375rem; }
+.progress div { height: 100%; width: 0; background: linear-gradient(90deg, var(--pink), var(--yellow), var(--neon)); transition: width .4s; }
+.warn { color: var(--warn); font-size: 0.8125rem; }
+.err { color: #ff8f8f; font-size: 0.8125rem; white-space: pre-wrap; }
+.recent { margin-top: 0.875rem; display: flex; flex-direction: column; gap: 0.25rem; max-height: 13.75rem; overflow-y: auto; }
+.recent button { text-align: left; background: none; border: 0; color: var(--dim); font: inherit; font-size: 0.8125rem; padding: 0.3125rem 0.5rem; border-radius: 0.375rem; cursor: pointer; }
+.recent button:hover, .recent button.on { background: var(--panel2); color: var(--text); }
+.placeholder { color: var(--dim); text-align: center; padding: 1.875rem; font-size: 0.875rem; }
+.toast { position: fixed; left: 50%; bottom: 1.5rem; transform: translateX(-50%) translateY(1.25rem); background: var(--panel2); border: 1px solid var(--line); color: var(--text); padding: 0.625rem 0.875rem; border-radius: 0.75rem; display: flex; gap: 0.875rem; align-items: center; opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s; z-index: 20; box-shadow: 0 0.5rem 1.875rem rgba(0,0,0,.5); font-size: 0.875rem; max-width: calc(100% - 2rem); }
+.toast.on { opacity: 1; transform: translateX(-50%); pointer-events: auto; }
+.toast.err { border-color: #ff8f8f; }
+.toast button { background: none; border: 0; color: var(--neon); font: inherit; font-weight: 600; cursor: pointer; padding: 0; }
+.btn.armed { border-color: var(--yellow); color: var(--yellow); background: rgba(255,241,166,.08); }
+.foot { display: flex; align-items: center; justify-content: center; gap: 0.75rem; flex-wrap: wrap; margin-top: 2.25rem; padding: 1.375rem 1rem 1.875rem; border-top: 1px solid var(--line); color: var(--dim); font-size: 0.8125rem; text-align: center; }
+.foot img { height: 1.875rem; width: auto; display: block; }
+.foot .love { color: var(--pink); }
+.snapbar { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; padding: 0.75rem 0.875rem; margin-bottom: 0.75rem; }
+.snapbar .note { flex: 1; min-width: 11.25rem; }
+.snapbar .progress { flex-basis: 100%; margin: 0.25rem 0 0; }
+.ft { padding: 0.875rem 1rem; margin-bottom: 0.75rem; display: none; }
+.ft.on { display: block; }
+.ft .head { display: flex; align-items: baseline; gap: 0.625rem; margin-bottom: 0.5rem; }
+.ft .head b { font-size: 0.9375rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; }
+.ft canvas { height: 7.5rem; cursor: ew-resize; }
+.ft .tools { display: flex; flex-wrap: wrap; gap: 0.375rem; margin-top: 0.625rem; align-items: center; }
+.ft .tools .sep { flex: 1; }
+.ft .legend { display: flex; gap: 0.875rem; font-size: 0.75rem; color: var(--dim); margin-top: 0.375rem; flex-wrap: wrap; }
+.ft .legend i { display: inline-block; width: 0.625rem; height: 0.625rem; border-radius: 2px; margin-right: 0.3125rem; vertical-align: -1px; }
+.btn.toggle.on { border-color: var(--neon); color: var(--neon); }
+.ln .snap { color: var(--neon); font-size: 0.5625rem; margin-left: 2px; }
+.chip.addfont { border-style: dashed; color: var(--yellow); }
+.chip .rm { margin-left: 0.5rem; opacity: .55; font-size: 0.75rem; }
+.chip .rm:hover { opacity: 1; color: #ff8f8f; }
+.chip.armed { border-color: #ff8f8f; color: #ff8f8f; }
+.savebox { margin-top: 1rem; padding: 0.75rem 0.875rem; border: 1px solid var(--line); border-radius: 0.75rem; background: var(--panel); }
+.savebox .path { font-size: 0.875rem; color: var(--yellow); }
+/* app layout: on laptop and desktop screens the window is the page — Sync and Make fit in one view */
+@media (min-width: 861px) {
+  body { height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+  header, .foot { flex: none; }
+  main { flex: 1; min-height: 0; width: 100%; max-width: 100rem; overflow-y: auto; padding: 1.1rem 1.75rem; }
+  .foot { margin-top: 0; padding: 0.45rem 1rem; font-size: 0.75rem; }
+  .foot img { height: 1.3rem; }
+  section.fit.on { display: flex; flex-direction: column; height: 100%; }
+  section.fit > h2, section.fit > .sub { flex: none; }
+  section.fit > .sub { margin-bottom: 0.9rem; }
+  .sync, .make { flex: 1; min-height: 0; align-items: stretch; grid-template-columns: minmax(0, 1fr) minmax(15rem, 21rem); grid-template-rows: minmax(0, 1fr); }
+  .sync > div:first-child { display: flex; flex-direction: column; min-height: 0; }
+  .sync .lines { flex: 1; min-height: 6rem; max-height: none; margin-bottom: 0; }
+  .make > div:first-child { overflow-y: auto; min-height: 0; padding-right: 0.35rem; }
+  .make > div:first-child > .card:last-child { margin-bottom: 0; }
+  .phone { position: static; display: flex; flex-direction: column; min-height: 0; overflow-y: auto; }
+  .phone > .screen { flex: none; align-self: center; }
+  .recent { max-height: 9rem; }
+  /* Setup: the lyrics box takes whatever height is left */
+  section[data-tab="setup"].on > .card { flex: none; }
+  section[data-tab="setup"].on > .lyrcard { flex: 1; min-height: 12rem; display: flex; flex-direction: column; margin-bottom: 0.6rem; }
+  .lyrcard textarea { flex: 1; min-height: 6rem; resize: none; }
+  section[data-tab="setup"].on > .next { flex: none; margin-top: 0; }
+}
+/* options side by side: two columns, or three when the panel is wide, so they need far less height */
+.make > div:first-child { container-type: inline-size; }
+@container (min-width: 40rem) {
+  .card.opts { display: grid; grid-template-columns: 1fr 1fr; gap: 0 1.6rem; padding: 0.9rem 1.1rem; }
+  .card.opts > .opt { margin-bottom: 0.7rem; }
+  .card.opts .label { margin-bottom: 0.3rem; }
+  .card.opts .chips { gap: 0.35rem; }
+  .card.opts .chip { padding: 0.4rem 0.75rem; font-size: 0.8125rem; }
+  .card.opts .chip small { display: none; }  /* the description shows on hover instead */
+  .card.opts > .opt.wide { grid-column: 1 / -1; }
+}
+@container (min-width: 58rem) {
+  .card.opts { grid-template-columns: 1fr 1fr 1fr; gap: 0 1.4rem; }
+}
+@media (max-width: 860px) { header { gap: 0.625rem 1rem; padding: 0.75rem 1rem; flex-wrap: wrap; } nav { order: 3; width: 100%; } nav button { padding: 0.3125rem 0.75rem 0.3125rem 0.375rem; } .brand { font-size: 1.1875rem; letter-spacing: 1px; } .brand img { height: 1.0625rem; } .sync, .make, .modes { grid-template-columns: 1fr; } .phone { position: static; max-width: 20rem; margin: 0 auto; } }
+
+.lyric.s-whisper { font-family: Baskerville, "Libre Baskerville", Georgia, serif; }
+.lyric.s-bold { font-family: Futura, Jost, "Century Gothic", sans-serif; }
+.lyric.s-typewriter { font-family: "American Typewriter", "Special Elite", "Courier New", monospace; }
+.lyric.s-clean { font-family: "Avenir Next", Figtree, "Segoe UI", sans-serif; }
+.lyric.s-arial { font-family: Arial, Arimo, "Helvetica Neue", sans-serif; }
+</style>
+</head>
+<body>
+<header>
+  <div class="brand" data-go="start"><span class="bt"><img class="title-img" src="static/title-jch.png" alt="Jazz's Lyric Snips"></span><img src="static/jch-logo.png" alt="Jazz Calls Home logo"></div>
+  <nav>
+    <button data-go="setup"><span class="n">1</span>Setup</button>
+    <button data-go="sync"><span class="n">2</span>Sync lyrics</button>
+    <button data-go="make"><span class="n">3</span>Make video</button>
+  </nav>
+  <button class="modepill" data-go="start" id="modePill"></button>
+</header>
+<main>
+  <section data-tab="start">
+    <h2>What are you making?</h2>
+    <p class="sub">You can switch any time. Your song, lyrics and timings are shared between both.</p>
+    <div class="modes">
+      <button class="mode" data-pick="clips">
+        <div class="ic">🎞️</div>
+        <h3>Edit my clips</h3>
+        <p>Point it at a folder of clips. It picks the best moments, cuts them on the beat and puts your lyrics on top.</p>
+      </button>
+      <button class="mode" data-pick="performance">
+        <div class="ic">🎤</div>
+        <h3>Performance video</h3>
+        <p>One video of you performing the song. It lines the video up with the song automatically and puts your lyrics on top. No cutting.</p>
+      </button>
+    </div>
+  </section>
+
+  <section data-tab="setup" class="fit">
+    <h2>Setup</h2>
+    <p class="sub">Choose a song, your footage and the lyrics. Everything saves automatically.</p>
+    <div class="card row">
+      <div class="grow"><div class="label">Song</div><div class="path" id="songPath"></div><div class="note" id="songInfo"></div></div>
+      <button class="btn" data-choose="song">Choose song…</button>
+    </div>
+    <div class="card row" data-mode="clips">
+      <div class="grow"><div class="label">Clips folder</div><div class="path" id="clipsPath"></div><div class="note" id="clipsInfo"></div></div>
+      <button class="btn" data-choose="clips">Choose folder…</button>
+    </div>
+    <div class="card row" data-mode="performance">
+      <div class="grow"><div class="label">Performance video</div><div class="path" id="perfPath"></div><div class="note" id="perfInfo"></div></div>
+      <button class="btn" data-choose="performance">Choose video…</button>
+    </div>
+    <div class="card lyrcard">
+      <div class="label">Lyrics</div>
+      <div class="note" style="margin-bottom:0.75rem">Each line shows on screen by itself. Empty lines are removed automatically, so every line in the list is one you tap. Delete anything you don't want shown, like the song title.</div>
+      <div class="row" style="flex-wrap:wrap; gap:0.5rem; margin-bottom:0.625rem">
+        <button class="btn" id="lyrFileBtn">📄 Word or text file…</button>
+        <button class="btn" id="lyrDocBtn">🔗 Google Doc link…</button>
+        <button class="btn" id="lyrPasteBtn">📋 Paste</button>
+        <input type="file" id="lyrFile" accept=".docx,.doc,.txt,.rtf,.odt,.md,.htm,.html" style="display:none">
+      </div>
+      <div class="row" id="lyrDocRow" style="display:none; gap:0.5rem; margin-bottom:0.625rem">
+        <input type="url" id="lyrDocUrl" class="grow" placeholder="https://docs.google.com/document/d/…" style="background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:0.625rem;padding:0.5625rem 0.75rem;font:inherit;min-width:0">
+        <button class="btn primary" id="lyrDocGo">Import</button>
+      </div>
+      <div class="note" id="lyrDocNote" style="display:none; margin:-0.25rem 0 0.625rem">The doc has to be shared as “Anyone with the link can view” (Share › General access).</div>
+      <textarea id="lyrics" spellcheck="false" placeholder="Paste or type lyrics here, one line per screen. You can also drop a Word or text file here."></textarea>
+    </div>
+    <div class="next"><button class="btn primary big" data-go="sync">Next: sync lyrics →</button></div>
+  </section>
+
+  <section data-tab="sync" class="fit">
+    <h2>Sync lyrics</h2>
+    <p class="sub">Press <kbd>Space</kbd> to play. Then press <kbd>Space</kbd> again each time the next line starts. Click any line to go back to it.</p>
+    <div class="sync">
+      <div>
+        <div class="card snapbar">
+          <button class="btn primary" id="snapBtn">🎤 Snap taps to vocals</button>
+          <div class="note" id="snapNote">Tap roughly, then let the app move each line to where the singing actually starts.</div>
+          <div class="progress" id="snapProg" style="display:none"><div id="snapBar"></div></div>
+        </div>
+        <div class="card ft" id="ft">
+          <div class="head"><span class="label" style="margin:0">Fine-tune line <span id="ftNum"></span></span><b id="ftText"></b><button class="btn small" id="ftClose" title="Close">✕</button></div>
+          <canvas id="ftCanvas" width="1400" height="240"></canvas>
+          <div class="legend"><span><i style="background:var(--pink)"></i>vocals</span><span><i style="background:#3a3a40"></i>full song</span><span><i style="background:var(--neon)"></i>line starts here (drag it)</span><span id="ftTapLegend"><i style="background:var(--yellow)"></i>your original tap</span></div>
+          <div class="tools">
+            <button class="btn small" id="ftPrev">◀ Prev line</button>
+            <button class="btn small" id="ftPlay">▶ Play</button>
+            <button class="btn small toggle" id="ftVocals" title="Listen to the separated vocals only">Vocals only</button>
+            <button class="btn small" data-ftn="-0.05">− 0.05s</button>
+            <button class="btn small" data-ftn="0.05">+ 0.05s</button>
+            <button class="btn small" id="ftSnap">Snap this line</button>
+            <span class="sep"></span>
+            <button class="btn small" id="ftNext">Next line ▶</button>
+          </div>
+        </div>
+        <div class="card lines" id="lines"></div>
+      </div>
+      <div class="phone">
+        <div class="screen"><video id="syncVideo" muted playsinline preload="auto" style="display:none"></video><div class="lyric" id="syncLyric"><span></span></div></div>
+        <div class="controls">
+          <div class="bar" id="seek"><div class="fill" id="seekFill"></div></div>
+          <div class="times"><span id="tNow">0:00</span><span id="tCount"></span><span id="tDur">0:00</span></div>
+          <div class="row" style="margin-top:0.625rem">
+            <button class="btn grow" id="playBtn">▶ Play</button>
+            <select id="rate" title="Playback speed"><option value="1">1×</option><option value="0.85">0.85×</option><option value="0.7">0.7×</option></select>
+          </div>
+          <div class="keys">
+            <kbd>Space</kbd><span>Play, then tap each line</span>
+            <kbd>Enter</kbd><span>Clear the screen (end the line early)</span>
+            <kbd>⌫</kbd><span>Undo the last tap and rewind 3 seconds</span>
+            <kbd>← →</kbd><span>Skip 3 seconds</span>
+            <kbd>P</kbd><span>Pause or play</span>
+          </div>
+          <div style="margin-top:1rem">
+            <div class="label">Text timing <span class="note" id="offVal2"></span></div>
+            <input type="range" class="plain" id="offset2" min="-0.6" max="0.3" step="0.05">
+            <div class="times"><span>earlier</span><span>later</span></div>
+            <div class="note" style="margin-top:0.25rem">The preview above uses this, exactly like your video will. If words appear after they're sung, slide left.</div>
+          </div>
+          <div class="row" style="margin-top:0.875rem"><button class="btn grow" id="clearTimes">Clear all timings</button></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section data-tab="make" class="fit">
+    <h2>Make video</h2>
+    <p class="sub" id="makeSub"></p>
+    <div class="make">
+      <div>
+        <div class="card">
+          <div class="row" style="margin-bottom:0.625rem">
+            <div class="grow rangeinfo">
+              <span><span class="label">Start</span> <b id="rStart">0:00.0</b></span>
+              <span><span class="label">End</span> <b id="rEnd">0:00.0</b></span>
+              <span><span class="label">Length</span> <b id="rLen">0s</b></span>
+            </div>
+            <span class="quick"><button class="chip small" data-len="15" title="15 seconds from the start">15s</button><button class="chip small" data-len="30" title="30 seconds from the start">30s</button><button class="chip small" data-len="60" title="60 seconds from the start">60s</button><button class="chip small" data-len="0" title="From the start to the end of the song">To end</button></span>
+            <button class="btn small" id="peakBtn" title="Jump to the loudest 30 seconds">Find the peak</button>
+            <button class="btn small" id="secPlay">▶ Listen</button>
+          </div>
+          <canvas id="energy" width="1600" height="220"></canvas>
+          <div class="dual">
+            <div class="track"></div><div class="sel" id="dualSel"></div>
+            <input type="range" id="rangeA" step="0.1" min="0" max="100">
+            <input type="range" id="rangeB" step="0.1" min="0" max="100">
+          </div>
+          <div class="note" style="margin-top:0.25rem">Drag the handles or the pink edges to set the start and end. Drag the middle to move it. Ticks are lyric lines.<span data-mode="performance"> Greyed-out parts aren't in your video.</span></div>
+        </div>
+        <div class="card opts">
+          <div class="opt wide"><div class="label">Font <span class="note">· picking a font also picks the effect that suits it; change it below</span></div><div class="chips" data-set="text_style">
+            <button class="chip" data-v="whisper" style="font-family:Baskerville;font-style:italic">whisper</button>
+            <button class="chip" data-v="bold" style="font-family:Futura;font-weight:700;letter-spacing:1px">BOLD</button>
+            <button class="chip" data-v="arial" style="font-family:Arial;font-weight:700;-webkit-text-stroke:2px #000;paint-order:stroke fill">Arial</button>
+            <button class="chip" data-v="led" style="font-family:DotGothic16;letter-spacing:1px">LED SCREEN</button>
+            <button class="chip" data-v="dos" style="font-family:'Px437 IBM VGA 8x16'">C:\&gt; MS-DOS</button>
+            <button class="chip" data-v="typewriter" style="font-family:'American Typewriter'">typewriter</button>
+            <button class="chip" data-v="clean" style="font-family:'Avenir Next';font-weight:600">Clean</button>
+            <span id="customFontChips" style="display:contents"></span>
+            <button class="chip addfont" id="addFontBtn" title="Upload a .ttf, .otf, .ttc, .woff or .woff2 font file">＋ Add your own font…</button>
+            <input type="file" id="fontFile" accept=".ttf,.otf,.ttc,.woff,.woff2" style="display:none">
+          </div></div>
+          <div class="opt"><div class="label">Text colour</div>
+            <div class="swatches">
+              <button class="sw" data-c="#ffffff" style="background:#ffffff" title="White"></button>
+              <button class="sw" data-c="#000000" style="background:#000000" title="Black"></button>
+              <button class="sw" data-c="#ff3b8d" style="background:#ff3b8d" title="Pink"></button>
+              <button class="sw" data-c="#ff2b2b" style="background:#ff2b2b" title="Red"></button>
+              <button class="sw" data-c="#ffd23f" style="background:#ffd23f" title="Yellow"></button>
+              <button class="sw" data-c="#33ff66" style="background:#33ff66" title="Terminal green"></button>
+              <button class="sw" data-c="#3ee7ff" style="background:#3ee7ff" title="Cyan"></button>
+              <button class="sw" data-c="#b48cff" style="background:#b48cff" title="Lilac"></button>
+              <input type="color" id="colorPick" title="Pick any colour">
+            </div>
+          </div>
+          <div class="opt"><div class="label">Text effect</div><div class="chips" data-set="text_effect">
+            <button class="chip" data-v="clean">Clean <small>no effect</small></button>
+            <button class="chip" data-v="shadow">Shadow <small>soft dark halo</small></button>
+            <button class="chip" data-v="glow">Glow <small>in the text colour</small></button>
+            <button class="chip" data-v="outline">Outline <small>black edge</small></button>
+            <button class="chip" data-v="box">Background <small>box behind text</small></button>
+          </div></div>
+          <div class="opt"><div class="label">Text size</div><div class="chips" data-set="text_size">
+            <button class="chip" data-v="small">Small</button><button class="chip" data-v="medium">Medium</button><button class="chip" data-v="large">Large</button>
+          </div></div>
+          <div class="opt"><div class="label">Text position</div><div class="chips" data-set="text_position">
+            <button class="chip" data-v="top">Top <small>below the app's top bar</small></button>
+            <button class="chip" data-v="center">Centre</button>
+            <button class="chip" data-v="bottom">Bottom <small>above captions &amp; buttons</small></button>
+          </div></div>
+          <div class="opt"><div class="label">Look</div><div class="chips" data-set="look">
+            <button class="chip" data-v="film">Film <small>grain + vignette</small></button>
+            <button class="chip" data-v="dreamy">Dreamy <small>soft glow</small></button>
+            <button class="chip" data-v="punchy">Punchy <small>contrast</small></button>
+            <button class="chip" data-v="raw">Raw <small>as shot</small></button>
+          </div></div>
+          <div class="opt" data-mode="clips"><div class="label">Edit style</div><div class="chips" data-set="edit_style">
+            <button class="chip" data-v="cinematic">Cinematic <small>slow push-ins, fade in &amp; out</small></button>
+            <button class="chip" data-v="superclean">Superclean <small>straight cuts only, no movement</small></button>
+          </div></div>
+          <div class="opt" data-mode="clips"><div class="label">Cut speed</div><div class="chips" data-set="pace">
+            <button class="chip" data-v="auto">Follow the song</button><button class="chip" data-v="slow">Slow</button><button class="chip" data-v="medium">Medium</button><button class="chip" data-v="fast">Fast</button>
+          </div></div>
+          <div class="opt" data-mode="clips"><div class="label">Footage</div><div class="chips" data-set="footage">
+            <button class="chip" data-v="auto">Auto</button>
+            <button class="chip" data-v="flow">Flow <small>one moment, switch clips on the beat</small></button>
+            <button class="chip" data-v="mix">Mix <small>random moments</small></button>
+          </div></div>
+          <div class="opt" data-mode="performance"><div class="label">Sound</div><div class="chips" data-set="audio_source">
+            <button class="chip" data-v="song">Song file <small>studio sound, lined up</small></button>
+            <button class="chip" data-v="video">Video's own sound</button>
+          </div></div>
+          <div class="opt"><div class="label">Framing <span class="note" id="frameVal"></span></div>
+            <input type="range" class="plain" id="framing" min="0" max="1" step="0.05">
+            <div class="times"><span>left</span><span>centre</span><span>right</span></div>
+          </div>
+          <div class="opt"><div class="label" title="Taps usually land a little after the singer, since it takes a moment to react. This moves all lyrics earlier to make up for it. You can also adjust it on the Sync screen while you listen.">Lyric timing <span class="note" id="offVal"></span> <span class="note" style="cursor:help">ⓘ</span></div>
+            <input type="range" class="plain" id="offset" min="-0.6" max="0.3" step="0.05">
+            <div class="times"><span>text earlier</span><span>text later</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="phone">
+        <div class="screen" id="outScreen"></div>
+        <div id="status" style="margin-top:0.75rem"></div>
+        <div class="row" style="margin-top:0.75rem">
+          <button class="btn primary big grow" id="renderBtn">Make video</button>
+        </div>
+        <div class="row" style="margin-top:0.5rem">
+          <button class="btn grow" id="rerollBtn" title="Same settings, a different edit">↻ Reroll</button>
+          <button class="btn grow" id="revealBtn">Show in Finder</button>
+        </div>
+        <div class="row" style="margin-top:0.5rem">
+          <button class="btn grow small" id="backToPreview" style="display:none">Back to text preview</button>
+        </div>
+        <div class="savebox">
+          <div class="label" style="margin:0 0 0.25rem">Save videos to</div>
+          <div class="path" id="outPath" title=""></div>
+          <div class="row" style="margin-top:0.5rem; gap:0.5rem">
+            <button class="btn small grow" data-choose="output">📁 Change folder…</button>
+            <button class="btn small" id="outReset" title="Go back to Movies › Lyric Videos">Default</button>
+          </div>
+        </div>
+        <div class="label" style="margin-top:1.125rem">Recent videos</div>
+        <div class="recent" id="recent"></div>
+      </div>
+    </div>
+  </section>
+</main>
+<footer class="foot">
+  <img src="static/jch-logo.png" alt="Jazz Calls Home logo">
+  <span>Made with <span class="love" role="img" aria-label="love">💖</span> by Jazz Calls Home + Claude</span>
+</footer>
+<audio id="audio" preload="auto"></audio>
+<div class="toast" id="toast"><span id="toastMsg"></span><button id="toastAct"></button></div>
+
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+<script src="engine.js"></script>
+<script src="shim.js"></script>
+<script>
+// media addresses: the desktop app's server answers these paths; the browser version swaps in its own
+window.mediaURL = window.mediaURL || (p => p);
+window.setImageFrom = window.setImageFrom || ((img, p) => { img.src = p; });
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+const audio = $("#audio"), sv = $("#syncVideo");
+let S = null, A = null, P = null, tab = "setup", cur = 0, lastVideo = null, saveTimer = null, sectionStop = null, pending = {};
+
+const fmt = t => { t = Math.max(0, t || 0); const m = Math.floor(t / 60), s = t - m * 60; return `${m}:${s < 10 ? "0" : ""}${s.toFixed(1)}`; };
+const fmt0 = t => { t = Math.max(0, Math.round(t || 0)); return `${Math.floor(t / 60)}:${String(t % 60).padStart(2, "0")}`; };
+const api = async (path, body) => {
+  const r = await fetch(path, body === undefined ? {} : { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+  const j = await r.json();
+  if (!r.ok) throw new Error(j.error || r.statusText);
+  return j;
+};
+let toastTimer = null;
+function toast(msg, actionLabel, action, isError) {
+  const t = $("#toast");
+  $("#toastMsg").textContent = msg;
+  const b = $("#toastAct");
+  b.textContent = actionLabel || ""; b.style.display = actionLabel ? "" : "none";
+  b.onclick = () => { t.classList.remove("on"); action && action(); };
+  t.classList.toggle("err", !!isError);
+  t.classList.add("on");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove("on"), actionLabel ? 7000 : 4000);
+}
+// two-click confirm: the first click arms the button, a second click within 4 s does it
+function armed(btn, armedLabel, action) {
+  if (btn.classList.contains("armed")) {
+    clearTimeout(btn._t); btn.classList.remove("armed"); btn.textContent = btn._label; action(); return;
+  }
+  btn._label = btn.textContent; btn.textContent = armedLabel; btn.classList.add("armed");
+  btn._t = setTimeout(() => { btn.classList.remove("armed"); btn.textContent = btn._label; }, 4000);
+}
+const lines = () => S.lyrics.split("\n").map(l => l.trim()).filter(Boolean);
+const perf = () => S && S.mode === "performance";
+// "/Users/you/Movies/Lyric Videos" -> "Movies › Lyric Videos"
+function friendlyPath(p) {
+  if (!p) return "";
+  const m = p.match(/^\/Users\/[^/]+\/(.*)$/);
+  return (m ? m[1] : p.replace(/^\//, "")).split("/").filter(Boolean).join(" › ") || "Home folder";
+}
+function showOutDir() {
+  $("#outPath").textContent = friendlyPath(S.output_dir);
+  $("#outPath").title = S.output_dir;
+  $("#outReset").style.display = S.output_is_default ? "none" : "";
+}
+
+function save(part, now) {
+  for (const k in part) pending[k] = k === "settings" ? { ...(pending.settings || {}), ...part.settings } : part[k];
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(flush, now ? 0 : 400);
+}
+function flush() {
+  clearTimeout(saveTimer);
+  const b = pending; pending = {};
+  return Object.keys(b).length ? api("/api/save", b).catch(e => toast("Couldn't save: " + e.message, null, null, true)) : Promise.resolve();
+}
+window.addEventListener("beforeunload", flush);
+
+// ---------- tabs and mode
+function go(t) {
+  if (t !== "start" && S && !S.mode) t = "start";
+  tab = t;
+  $$("section[data-tab]").forEach(s => s.classList.toggle("on", s.dataset.tab === t));
+  $$("nav button").forEach(b => b.classList.toggle("on", b.dataset.go === t));
+  if (t !== "sync" && !audio.paused && !sectionStop) audio.pause();
+  if (t === "sync") { renderLines(); scrollToCur(true); refreshVocals(); }
+  if (t === "make") { drawRange(); loadRecent(); if (!lastVideo) samplePreview(); }
+  requestAnimationFrame(fitScreens);
+  window.scrollTo(0, 0);
+}
+$$("[data-go]").forEach(b => b.onclick = () => go(b.dataset.go));
+function applyMode() {
+  document.body.classList.toggle("m-clips", S.mode !== "performance");
+  document.body.classList.toggle("m-performance", S.mode === "performance");
+  $("#modePill").innerHTML = S.mode ? `Making: <b>${perf() ? "Performance video" : "Clips edit"}</b> · change` : "Choose a mode";
+  $$(".mode").forEach(b => b.classList.toggle("on", b.dataset.pick === S.mode));
+  $("#makeSub").textContent = perf()
+    ? "Pick the part of the song to use. The video stays in sync with the song, and your lyrics go on top."
+    : "Pick the part of the song and a look. Every cut lands on the beat. Hit Reroll for a different edit.";
+}
+$$("[data-pick]").forEach(b => b.onclick = async () => {
+  S.mode = b.dataset.pick;
+  save({ mode: S.mode });
+  await flush();
+  applyMode();
+  updateNav();
+  const footage = perf() ? S.performance : S.clips;
+  const ready = S.song && footage && lines().length;
+  go(!ready ? "setup" : S.timings.every(t => t.start != null) ? "make" : "sync");
+  await loadPerf();
+});
+
+// ---------- setup
+async function loadState() {
+  S = await api("/api/state");
+  normalizeTimings();
+  document.body.classList.toggle("ed-personal", S.edition === "personal");
+  document.body.classList.toggle("ed-shared", S.edition === "shared");
+  // hide built-in fonts this edition doesn't include 
+  $$('[data-set="text_style"] > .chip[data-v]').forEach(c => { if (!c.dataset.v.startsWith("custom:")) c.style.display = (S.styles || []).includes(c.dataset.v) ? "" : "none"; });
+  applyMode();
+  renderCustomFonts();
+  showOutDir();
+  $("#songPath").textContent = S.song || "No song chosen";
+  $("#songPath").classList.toggle("empty", !S.song);
+  $("#clipsPath").textContent = S.clips || "No folder chosen";
+  $("#clipsPath").classList.toggle("empty", !S.clips);
+  $("#clipsInfo").textContent = S.clips_error || (S.clips ? (S.clip_files.length ? `${S.clip_files.length} clips: ${S.clip_files.slice(0, 4).join(", ")}${S.clip_files.length > 4 ? "…" : ""}` : "No video files in this folder yet") : "");
+  if (S.scan) $("#clipsInfo").textContent += " · " + S.scan.msg;
+  clearTimeout(scanTimer);
+  if (S.scan) scanTimer = setTimeout(refreshScan, 4000);
+  $("#perfPath").textContent = S.performance || "No video chosen";
+  $("#perfPath").classList.toggle("empty", !S.performance);
+  if (cleanLyrics(S.lyrics) !== S.lyrics) { S.lyrics = cleanLyrics(S.lyrics); save({ lyrics: S.lyrics }); }
+  if (document.activeElement !== $("#lyrics")) $("#lyrics").value = S.lyrics;
+  syncSettingsUI();
+  updateNav();
+  if (S.song_ok) {
+    audio.src = mediaURL("/audio?v=" + encodeURIComponent(S.song));
+    $("#songInfo").textContent = "Analyzing…";
+    try {
+      A = await api("/api/song");
+      $("#songInfo").textContent = `${fmt0(A.duration)} · about ${Math.round(A.bpm)} BPM`;
+    } catch (e) { $("#songInfo").textContent = e.message; }
+  } else { $("#songInfo").textContent = S.song ? "Can't find this file anymore" : ""; }
+  await loadPerf();
+  drawRange();
+}
+async function loadPerf() {
+  P = null;
+  sv.style.display = "none";
+  const info = $("#perfInfo");
+  info.className = "note";
+  if (!perf()) return;
+  if (!S.performance) { info.textContent = ""; return; }
+  if (!S.performance_ok) { info.textContent = "Can't find this file anymore"; return; }
+  if (!S.song_ok) { info.textContent = "Choose the song too, so the video can be lined up with it."; return; }
+  info.textContent = "Lining the video up with the song…";
+  try {
+    P = await api("/api/perf-sync");
+    const o = P.offset;
+    const where = o >= 0 ? `The song starts ${fmt(o)} into the video.` : `The video starts ${fmt(-o)} into the song.`;
+    if (P.confident) { info.textContent = `✓ Lined up. ${where} It covers ${fmt0(P.covers[0])}–${fmt0(P.covers[1])} of the song.`; info.className = "note good"; }
+    else { info.textContent = `⚠ The video's sound didn't clearly match the song, so the sync may be off. Is it this song? (best guess: ${where})`; info.className = "note bad"; }
+    sv.src = mediaURL("/perfvideo?v=" + encodeURIComponent(S.performance));
+    sv.style.display = "";
+    applyFraming();
+  } catch (e) { info.textContent = e.message; info.className = "note bad"; }
+  drawRange();
+}
+let scanTimer = null;
+async function refreshScan() {
+  const st = await api("/api/state").catch(() => null);
+  if (!st) return;
+  S.scan = st.scan;
+  const base = $("#clipsInfo").textContent.split(" · ")[0];
+  $("#clipsInfo").textContent = base + (st.scan ? " · " + st.scan.msg : " · Clips are ready");
+  if (st.scan) scanTimer = setTimeout(refreshScan, 4000);
+}
+function normalizeTimings() {
+  const n = lines().length;
+  S.timings = (S.timings || []).slice(0, n);
+  while (S.timings.length < n) S.timings.push({ start: null, end: null });
+  cur = S.timings.findIndex(t => t.start == null);
+  if (cur < 0) cur = n;
+}
+function updateNav() {
+  const ls = lines();
+  const footage = perf() ? S.performance : S.clips;
+  $('nav [data-go="setup"]').classList.toggle("done", !!(S.song && footage && ls.length));
+  $('nav [data-go="sync"]').classList.toggle("done", ls.length > 0 && S.timings.every(t => t.start != null));
+}
+$$("[data-choose]").forEach(b => b.onclick = async () => {
+  const kind = b.dataset.choose;
+  b.disabled = true;
+  try {
+    const r = await api("/api/choose", { kind });
+    if (r.cancelled) return;
+    if (kind === "lyrics") {
+      const before = S.lyrics;
+      setLyrics(r.lyrics);
+      if (before.trim()) toast("Lyrics replaced from the file.", "Undo", () => setLyrics(before));
+    } else if (kind === "output") {
+      S = { ...S, ...(await api("/api/state")) }; showOutDir(); loadRecent();
+      toast("New videos will be saved to " + friendlyPath(S.output_dir) + ".");
+    } else await loadState();
+  } catch (e) { toast(e.message, null, null, true); } finally { b.disabled = false; }
+});
+
+// keep timings attached to the same lines when lyrics are edited (LCS diff on line text)
+function setLyrics(text) {
+  const old = lines(), oldT = S.timings;
+  S.lyrics = text;
+  $("#lyrics").value = text;
+  const neu = lines(), n = old.length, m = neu.length;
+  const L = Array.from({ length: n + 1 }, () => new Int16Array(m + 1));
+  for (let i = n - 1; i >= 0; i--) for (let j = m - 1; j >= 0; j--)
+    L[i][j] = old[i] === neu[j] ? L[i + 1][j + 1] + 1 : Math.max(L[i + 1][j], L[i][j + 1]);
+  const t = neu.map(() => ({ start: null, end: null }));
+  for (let i = 0, j = 0; i < n && j < m;) {
+    if (old[i] === neu[j]) { t[j] = oldT[i] || t[j]; i++; j++; }
+    else if (L[i + 1][j] >= L[i][j + 1]) i++; else j++;
+  }
+  S.timings = t;
+  normalizeTimings();
+  save({ lyrics: text, timings: S.timings });
+  updateNav();
+}
+$("#lyrics").addEventListener("input", e => setLyrics(e.target.value));
+
+// ---------- lyrics import: every route ends in the same clean-up (no empty lines)
+function cleanLyrics(text) {
+  return text.replace(/\r\n?|[\u2028\u2029\v\f]/g, "\n").replace(/[\u200b-\u200d\ufeff]/g, "")
+    .replace(/[\u00a0\t]/g, " ").split("\n").map(l => l.replace(/ {2,}/g, " ").trim()).filter(Boolean).join("\n");
+}
+function importLyrics(text, from) {
+  const before = S.lyrics, beforeTimings = S.timings.map(t => ({ ...t })), cleaned = cleanLyrics(text);
+  if (!cleaned) return toast(`No lyrics found in ${from}.`, null, null, true);
+  setLyrics(cleaned);
+  const n = cleaned.split("\n").length;
+  toast(`Imported ${n} lines from ${from}.`, before.trim() ? "Undo" : null, () => {
+    // put back the old lyrics and their taps exactly as they were
+    S.lyrics = before; $("#lyrics").value = before;
+    S.timings = beforeTimings; normalizeTimings();
+    save({ lyrics: S.lyrics, timings: S.timings }, true); updateNav();
+  });
+}
+async function uploadLyricsFile(file) {
+  if (!file) return;
+  try {
+    const r = await fetch("/api/lyrics/upload?name=" + encodeURIComponent(file.name), { method: "POST", body: file });
+    const j = await r.json();
+    if (!r.ok) throw new Error(j.error);
+    importLyrics(j.lyrics, file.name);
+  } catch (e) { toast(e.message, null, null, true); }
+}
+$("#lyrFileBtn").onclick = () => $("#lyrFile").click();
+$("#lyrFile").onchange = e => { uploadLyricsFile(e.target.files[0]); e.target.value = ""; };
+$("#lyrDocBtn").onclick = () => {
+  const show = $("#lyrDocRow").style.display === "none";
+  $("#lyrDocRow").style.display = $("#lyrDocNote").style.display = show ? "" : "none";
+  if (show) $("#lyrDocUrl").focus();
+};
+async function importDoc() {
+  const url = $("#lyrDocUrl").value.trim();
+  if (!url) return $("#lyrDocUrl").focus();
+  const b = $("#lyrDocGo"); b.disabled = true; b.textContent = "Importing…";
+  try {
+    const j = await api("/api/lyrics/gdoc", { url });
+    importLyrics(j.lyrics, "the Google Doc");
+    $("#lyrDocRow").style.display = $("#lyrDocNote").style.display = "none"; $("#lyrDocUrl").value = "";
+  } catch (e) { toast(e.message, null, null, true); }
+  b.disabled = false; b.textContent = "Import";
+}
+$("#lyrDocGo").onclick = importDoc;
+$("#lyrDocUrl").addEventListener("keydown", e => { if (e.key === "Enter") importDoc(); });
+$("#lyrPasteBtn").onclick = async () => {
+  try {
+    const text = await navigator.clipboard.readText();
+    if (!text.trim()) throw new Error("empty");
+    importLyrics(text, "the clipboard");
+  } catch (e) {
+    $("#lyrics").focus(); $("#lyrics").select();
+    toast("Press ⌘V to paste your lyrics into the box.");
+  }
+};
+// pasting into the box: tidy just the pasted text, then drop any empty lines
+$("#lyrics").addEventListener("paste", e => {
+  const text = (e.clipboardData || window.clipboardData).getData("text");
+  if (!text) return;
+  e.preventDefault();
+  const ta = e.target, all = ta.selectionStart === 0 && ta.selectionEnd === ta.value.length;
+  const merged = all ? text : ta.value.slice(0, ta.selectionStart) + "\n" + text + "\n" + ta.value.slice(ta.selectionEnd);
+  importLyrics(merged, "your paste");
+});
+// typing: allow blank lines while editing, tidy up when you leave the box
+$("#lyrics").addEventListener("blur", e => { const c = cleanLyrics(e.target.value); if (c !== S.lyrics) setLyrics(c); });
+// drop a file onto the box
+$("#lyrics").addEventListener("dragover", e => { if (e.dataTransfer.types.includes("Files")) { e.preventDefault(); e.target.style.borderColor = "var(--neon)"; } });
+$("#lyrics").addEventListener("dragleave", e => { e.target.style.borderColor = ""; });
+$("#lyrics").addEventListener("drop", e => {
+  if (!e.dataTransfer.files.length) return;
+  e.preventDefault(); e.target.style.borderColor = "";
+  uploadLyricsFile(e.dataTransfer.files[0]);
+});
+
+// ---------- sync
+function lineEnd(i) {
+  const t = S.timings[i];
+  if (!t || t.start == null) return null;
+  if (t.end != null) return t.end;
+  for (let j = i + 1; j < S.timings.length; j++) if (S.timings[j].start != null) return Math.min(S.timings[j].start, t.start + 6);
+  return t.start + 4;
+}
+function showingAt(time) {
+  let best = -1;
+  S.timings.forEach((t, i) => { if (t.start != null && t.start <= time && time < lineEnd(i) && (best < 0 || t.start >= S.timings[best].start)) best = i; });
+  return best;
+}
+const NO_CURLY = [];
+function shown(text) {
+  return NO_CURLY.includes(S.settings.text_style) ? text.replace(/[\u2018\u2019]/g, "'").replace(/[\u201c\u201d]/g, '"') : text;
+}
+const SUGGESTED_EFFECT = { arial: "outline", led: "glow" };  // others: shadow
+function styleLyric(el) {
+  const st = S.settings, c = st.text_color || "#ffffff";
+  const n = parseInt(c.slice(1), 16), dark = (0.299 * (n >> 16) + 0.587 * (n >> 8 & 255) + 0.114 * (n & 255)) < 100;
+  el.className = `lyric s-${String(st.text_style).replace(":", "-")} fx-${st.text_effect || "shadow"} sz-${st.text_size || "medium"} pos-${st.text_position || "center"}`;
+  el.style.color = c;
+  el.style.setProperty("--tc", c);
+  el.style.setProperty("--halo", dark ? "rgba(255,255,255,.75)" : "rgba(0,0,0,.8)");
+  el.style.setProperty("--halo-solid", dark ? "#fff" : "#000");
+  el.style.setProperty("--boxc", dark ? "rgba(255,255,255,.81)" : "rgba(0,0,0,.75)");
+}
+// ---------- your own fonts
+function renderCustomFonts() {
+  const fonts = S.custom_fonts || [];
+  let css = "";
+  fonts.forEach(f => {
+    css += `@font-face { font-family: "${f.family_ass}"; src: url("${mediaURL("/fonts/" + f.file)}"); }\n` +
+           `.lyric.s-custom-${f.id} { --base: 80; font-family: "${f.family_ass}", sans-serif; }\n`;
+  });
+  let tag = $("#customFontCss");
+  if (!tag) { tag = document.createElement("style"); tag.id = "customFontCss"; document.head.appendChild(tag); }
+  tag.textContent = css;
+  NO_CURLY.splice(1, NO_CURLY.length, ...fonts.filter(f => f.straight_quotes).map(f => "custom:" + f.id));
+  const box = $("#customFontChips");
+  box.innerHTML = "";
+  fonts.forEach(f => {
+    const b = document.createElement("button");
+    b.className = "chip"; b.dataset.v = "custom:" + f.id; b.title = f.name + " (your font)";
+    b.style.fontFamily = `"${f.family_ass}", sans-serif`;
+    b.innerHTML = '<span class="nm"></span><span class="rm" title="Remove this font">✕</span>';
+    b.querySelector(".nm").textContent = f.name;
+    box.appendChild(b);
+  });
+  syncSettingsUI();
+}
+$("#addFontBtn").onclick = () => $("#fontFile").click();
+$("#fontFile").onchange = async e => {
+  const file = e.target.files[0]; e.target.value = "";
+  if (!file) return;
+  const btn = $("#addFontBtn"); btn.disabled = true; btn.textContent = "Adding font…";
+  try {
+    const r = await fetch("/api/fonts/upload?name=" + encodeURIComponent(file.name), { method: "POST", body: file });
+    const f = await r.json();
+    if (!r.ok) throw new Error(f.error);
+    S.custom_fonts = (S.custom_fonts || []).filter(x => x.id !== f.id).concat(f);
+    renderCustomFonts();
+    await document.fonts.load(`20px "${f.family_ass}"`).catch(() => {});
+    S.settings.text_effect = "shadow";
+    save({ settings: { text_effect: "shadow" } });
+    setSetting("text_style", "custom:" + f.id);
+    toast(`Added “${f.name}”.` + (f.straight_quotes ? " It has no curly apostrophes, so straight ones (') are used." : "") +
+          (f.missing_letters ? ` It's missing ${f.missing_letters} letters, which will show in a fallback font.` : ""));
+  } catch (err) { toast(err.message, null, null, true); }
+  btn.disabled = false; btn.textContent = "＋ Add your own font…";
+};
+function removeFont(chip, e) {
+  e.stopPropagation();
+  const fid = chip.dataset.v.slice(7), f = (S.custom_fonts || []).find(x => x.id === fid);
+  if (!chip.classList.contains("armed")) {
+    chip.classList.add("armed"); chip.querySelector(".nm").textContent = "Remove font?";
+    setTimeout(() => { if (chip.isConnected) { chip.classList.remove("armed"); chip.querySelector(".nm").textContent = f.name; } }, 3000);
+    return;
+  }
+  api("/api/fonts/remove", { id: fid }).then(() => {
+    S.custom_fonts = S.custom_fonts.filter(x => x.id !== fid);
+    if (S.settings.text_style === "custom:" + fid) S.settings.text_style = "whisper";
+    renderCustomFonts(); toast(`Removed “${f.name}”.`);
+  }).catch(err => toast(err.message, null, null, true));
+}
+function setLyricText(el, text) { el.firstElementChild.textContent = text; el.style.visibility = text ? "" : "hidden"; }
+function renderLines() {
+  const ls = lines(), raw = S.lyrics.split("\n");
+  let k = 0, html = "", prevBlank = false;
+  for (const r of raw) {
+    if (!r.trim()) continue;
+    prevBlank = false;
+    const t = S.timings[k];
+    html += `<div class="ln ${t.start != null ? "timed" : ""} ${k === cur ? "cur" : ""}" data-i="${k}">
+      <span class="i">${k + 1}</span><span class="x"></span>
+      <span class="t"><button data-n="-0.05" title="Earlier">−</button><span>${t.start != null ? fmt(t.start) : "—"}</span><button data-n="0.05" title="Later">+</button>${t.end != null ? '<span class="end" title="Ends early (Enter)">■</span>' : ""}${t.snapped || t.manual ? '<span class="snap" title="Lined up with the vocal">●</span>' : ""}</span></div>`;
+    k++;
+  }
+  if (!ls.length) html = '<div class="placeholder">Add lyrics in Setup first.</div>';
+  $("#lines").innerHTML = html;
+  $$("#lines .ln").forEach(el => { el.querySelector(".x").textContent = ls[+el.dataset.i]; });
+  $("#tCount").textContent = ls.length ? `${S.timings.filter(t => t.start != null).length} / ${ls.length} lines` : "";
+  updateSyncView();
+}
+$("#lines").addEventListener("click", e => {
+  const ln = e.target.closest(".ln"); if (!ln) return;
+  const i = +ln.dataset.i, nb = e.target.closest("button[data-n]");
+  if (nb) {
+    const t = S.timings[i]; if (t.start == null) return;
+    t.start = Math.max(0, +(t.start + +nb.dataset.n).toFixed(3));
+    save({ timings: S.timings }); renderLines(); return;
+  }
+  cur = i;
+  openFineTune(i);
+  let back = S.timings[i].start;
+  if (back == null) for (let j = i - 1; j >= 0; j--) if (S.timings[j].start != null) { back = S.timings[j].start; break; }
+  audio.currentTime = Math.max(0, (back ?? 0) - 2);
+  renderLines(); scrollToCur();
+});
+// ---------- vocal snapping + fine-tune
+let V = { state: "none" }, vPoll = null, ft = null;  // ft: {i, wave}
+const vAudio = new Audio(); vAudio.preload = "auto";
+async function refreshVocals() {
+  V = await api("/api/vocals/status").catch(() => ({ state: "none" }));
+  const note = $("#snapNote"), prog = $("#snapProg"), btn = $("#snapBtn");
+  clearTimeout(vPoll);
+  if (V.state === "running") {
+    btn.disabled = true; prog.style.display = "";
+    $("#snapBar").style.width = (V.frac * 100) + "%";
+    note.textContent = `${V.msg}. This happens once per song and takes a few minutes. You can keep tapping meanwhile.`;
+    vPoll = setTimeout(refreshVocals, 2000);
+  } else {
+    btn.disabled = false; prog.style.display = "none";
+    if (V.state === "ready") {
+      note.textContent = "Vocals are ready. Snapping lines up each tapped line with where its singing starts. Click a line to fine-tune it.";
+      if (!vAudio.src) vAudio.src = mediaURL("/vocals-audio?v=" + encodeURIComponent(S.song));
+      if (pendingSnap) { pendingSnap = false; snapAll(); }
+    } else if (V.state === "error") {
+      note.textContent = "Vocal separation failed: " + V.error; pendingSnap = false;
+    } else note.textContent = "Tap roughly, then let the app move each line to where the singing actually starts. The first time, it separates the vocals from the song (a few minutes).";
+    $("#ftVocals").style.display = V.state === "ready" ? "" : "none";
+    $("#ftSnap").style.display = V.state === "ready" ? "" : "none";
+    if (ft) loadWave();
+  }
+}
+let pendingSnap = false;
+$("#snapBtn").onclick = async () => {
+  if (!S.timings.some(t => t.start != null)) return toast("Tap the lines first, then snap them.");
+  if (V.state === "ready") return snapAll();
+  pendingSnap = true;
+  await api("/api/vocals/start", {}).catch(e => toast(e.message, null, null, true));
+  refreshVocals();
+};
+async function snapAll(only) {
+  flush();
+  const before = S.timings.map(t => ({ ...t }));
+  let r;
+  try { r = await api("/api/vocals/snap", { timings: S.timings, only }); } catch (e) { return toast(e.message, null, null, true); }
+  S.timings = r.timings; normalizeTimings();
+  save({ timings: S.timings }, true); renderLines(); updateNav(); if (ft) drawFineTune();
+  const undo = () => { S.timings = before; normalizeTimings(); save({ timings: S.timings }, true); renderLines(); if (ft) drawFineTune(); };
+  if (only != null) {
+    const m = r.moved[0];
+    return toast(m ? `Line ${only + 1} moved ${Math.abs(m.to - m.from).toFixed(2)}s ${m.to < m.from ? "earlier" : "later"}.` : `Couldn't find a clear vocal start near line ${only + 1}. It's left where you tapped it.`, m ? "Undo" : null, undo);
+  }
+  const shifts = r.moved.map(m => m.to - m.from).sort((a, b) => a - b);
+  const med = shifts.length ? shifts[Math.floor(shifts.length / 2)] : 0;
+  const tapped = S.timings.filter(t => t.start != null).length;
+  toast(`Snapped ${r.moved.length} of ${tapped} lines to the vocals (typically ${Math.abs(med).toFixed(2)}s ${med < 0 ? "earlier" : "later"}).` +
+        (tapped - r.moved.length ? ` ${tapped - r.moved.length} had no clear start and stay as tapped.` : ""), "Undo", undo);
+}
+function openFineTune(i) {
+  if (S.timings[i].start == null) { closeFineTune(); return; }
+  ft = { i, wave: null };
+  $("#ft").classList.add("on");
+  loadWave();
+}
+function closeFineTune() { ft = null; $("#ft").classList.remove("on"); vAudio.pause(); }
+$("#ftClose").onclick = closeFineTune;
+function ftWindow() { const t = S.timings[ft.i]; const c = t.start; return [Math.max(0, c - 1.5), c + 2.5]; }
+async function loadWave() {
+  if (!ft) return;
+  const [t0, t1] = ftWindow();
+  ft.wave = await api(`/api/vocals/wave?t0=${t0}&t1=${t1}`).catch(() => null);
+  drawFineTune();
+}
+function drawFineTune(playhead) {
+  if (!ft) return;
+  const t = S.timings[ft.i], cv = $("#ftCanvas"), ctx = cv.getContext("2d"), W = cv.width, H = cv.height;
+  $("#ftNum").textContent = ft.i + 1; $("#ftText").textContent = lines()[ft.i];
+  $("#ftTapLegend").style.display = t.tap != null && Math.abs(t.tap - t.start) > 0.005 ? "" : "none";
+  ctx.clearRect(0, 0, W, H);
+  const w = ft.wave; if (!w) return;
+  const span = w.t1 - w.t0, x = tt => (tt - w.t0) / span * W;
+  // ruler every 0.5 s
+  ctx.fillStyle = "#2a2a2e"; ctx.font = "20px -apple-system, sans-serif";
+  for (let s = Math.ceil(w.t0 * 2) / 2; s < w.t1; s += 0.5) { ctx.fillRect(x(s), 0, 1, H); ctx.fillStyle = "#6b6970"; ctx.fillText(fmt(s), x(s) + 4, 20); ctx.fillStyle = "#2a2a2e"; }
+  const bars = (arr, color, scale) => { const n = arr.length, bw = W / n; ctx.fillStyle = color; arr.forEach((v, k) => { const h = v * (H - 40) * scale; ctx.fillRect(k * bw, H - 6 - h, Math.max(1, bw - 0.5), h); }); };
+  bars(w.mix, "#3a3a40", 1);
+  if (w.vocals) bars(w.vocals, "#ffb3d4", 1);
+  if (t.tap != null && Math.abs(t.tap - t.start) > 0.005) { ctx.fillStyle = "#fff1a6"; ctx.fillRect(x(t.tap) - 1, 28, 2, H - 28); }
+  ctx.fillStyle = "#39ff88"; ctx.fillRect(x(t.start) - 2, 0, 4, H);
+  ctx.beginPath(); ctx.arc(x(t.start), 34, 10, 0, 7); ctx.fill();
+  if (playhead != null) { ctx.fillStyle = "#fff"; ctx.fillRect(x(playhead) - 1, 0, 2, H); }
+}
+(function ftDrag() {
+  const cv = $("#ftCanvas"); let drag = false;
+  const tAt = ev => { const r = cv.getBoundingClientRect(), w = ft.wave; return w.t0 + (ev.clientX - r.left) / r.width * (w.t1 - w.t0); };
+  cv.addEventListener("pointerdown", ev => { if (!ft || !ft.wave) return; drag = true; cv.setPointerCapture(ev.pointerId); move(ev); });
+  function move(ev) {
+    if (!drag) return;
+    const t = S.timings[ft.i];
+    if (t.tap == null) t.tap = t.start;
+    t.start = +Math.max(0, tAt(ev)).toFixed(3); t.manual = true;
+    drawFineTune();
+  }
+  cv.addEventListener("pointermove", move);
+  cv.addEventListener("pointerup", () => { if (!drag) return; drag = false; save({ timings: S.timings }); renderLines(); });
+})();
+$$("[data-ftn]").forEach(b => b.onclick = () => {
+  const t = S.timings[ft.i]; if (t.tap == null) t.tap = t.start;
+  t.start = +Math.max(0, t.start + +b.dataset.ftn).toFixed(3); t.manual = true;
+  save({ timings: S.timings }); renderLines(); drawFineTune();
+});
+$("#ftSnap").onclick = () => snapAll(ft.i);
+function ftStep(d) {
+  let j = ft.i + d;
+  while (j >= 0 && j < S.timings.length && S.timings[j].start == null) j += d;
+  if (j < 0 || j >= S.timings.length) return;
+  cur = j; openFineTune(j); renderLines(); scrollToCur();
+}
+$("#ftPrev").onclick = () => ftStep(-1);
+$("#ftNext").onclick = () => ftStep(1);
+$("#ftVocals").onclick = e => e.currentTarget.classList.toggle("on");
+let ftPlaying = null;
+$("#ftPlay").onclick = () => {
+  if (!ft) return;
+  const useV = $("#ftVocals").classList.contains("on") && V.state === "ready";
+  const el = useV ? vAudio : audio, other = useV ? audio : vAudio;
+  other.pause();
+  const from = Math.max(0, S.timings[ft.i].start - 1), to = S.timings[ft.i].start + 2;
+  el.currentTime = from; el.playbackRate = 1; el.play();
+  cancelAnimationFrame(ftPlaying);
+  const tick = () => {
+    if (el.paused) return drawFineTune();
+    if (el.currentTime >= to) { el.pause(); return drawFineTune(); }
+    // show the line on the preview screen too while auditioning
+    drawFineTune(el.currentTime); ftPlaying = requestAnimationFrame(tick);
+  };
+  tick();
+};
+
+function scrollToCur(instant) {
+  // keep the line you're about to tap in the middle of the list
+  const el = $(`#lines .ln[data-i="${Math.min(cur, lines().length - 1)}"]`);
+  if (!el) return;
+  const box = $("#lines");
+  const top = el.getBoundingClientRect().top - box.getBoundingClientRect().top + box.scrollTop;
+  box.scrollTo({ top: top - (box.clientHeight - el.offsetHeight) / 2, behavior: instant ? "auto" : "smooth" });
+}
+function tap() {
+  if (cur >= S.timings.length) return;
+  S.timings[cur] = { start: +audio.currentTime.toFixed(3), end: null };
+  cur++;
+  save({ timings: S.timings }); renderLines(); scrollToCur(); updateNav();
+}
+function endLine() {
+  const t = audio.currentTime;
+  const i = showingAt(t);
+  if (i >= 0) { S.timings[i].end = +t.toFixed(3); save({ timings: S.timings }); renderLines(); }
+}
+function undo() {
+  if (cur <= 0) return;
+  cur--;
+  S.timings[cur] = { start: null, end: null };
+  audio.currentTime = Math.max(0, audio.currentTime - 3);
+  save({ timings: S.timings }); renderLines(); scrollToCur(); updateNav();
+}
+function togglePlay() { if (!S.song_ok) return toast("Choose a song in Setup first.", null, null, true); audio.paused ? audio.play() : audio.pause(); }
+$("#playBtn").onclick = togglePlay;
+$("#rate").onchange = e => audio.playbackRate = +e.target.value;
+$("#clearTimes").onclick = e => {
+  const n = S.timings.filter(t => t.start != null).length;
+  if (!n) return toast("There are no timings to clear.");
+  armed(e.currentTarget, `Click again to clear all ${n} timings`, () => {
+    const before = S.timings.map(t => ({ ...t })), beforeCur = cur;
+    S.timings = S.timings.map(() => ({ start: null, end: null })); cur = 0;
+    audio.pause(); audio.currentTime = 0;
+    save({ timings: S.timings }, true); renderLines(); scrollToCur(); updateNav();
+    toast(`Cleared ${n} timings. Press Space to start tapping again.`, "Undo", () => {
+      S.timings = before; cur = beforeCur;
+      save({ timings: S.timings }, true); renderLines(); scrollToCur(); updateNav();
+    });
+  });
+};
+$("#seek").onclick = e => { const r = e.currentTarget.getBoundingClientRect(); audio.currentTime = (e.clientX - r.left) / r.width * (audio.duration || 0); };
+document.addEventListener("keydown", e => {
+  if (tab !== "sync" || e.target.matches("textarea, input, select") || e.metaKey || e.ctrlKey) return;
+  const k = e.key;
+  if (k === " ") { e.preventDefault(); audio.paused ? togglePlay() : tap(); }
+  else if (k === "Enter") { e.preventDefault(); endLine(); }
+  else if (k === "Backspace") { e.preventDefault(); undo(); }
+  else if (k === "ArrowLeft") { e.preventDefault(); audio.currentTime = Math.max(0, audio.currentTime - 3); }
+  else if (k === "ArrowRight") { e.preventDefault(); audio.currentTime += 3; }
+  else if (k === "p" || k === "P") togglePlay();
+});
+// keep the muted performance video locked to the song
+function followVideo() {
+  if (!P || sv.style.display === "none" || sv.readyState < 1) return;
+  const want = audio.currentTime + P.offset;
+  const inside = want >= 0 && want < (sv.duration || 0);
+  sv.style.opacity = inside ? 1 : 0;
+  if (!inside) { if (!sv.paused) sv.pause(); return; }
+  sv.playbackRate = audio.playbackRate;
+  if (audio.paused) {
+    if (!sv.paused) sv.pause();
+    if (Math.abs(sv.currentTime - want) > 0.05) sv.currentTime = want;
+  } else {
+    if (sv.paused) sv.play().catch(() => {});
+    if (Math.abs(sv.currentTime - want) > 0.25) sv.currentTime = want;
+  }
+}
+let lastShowing = -2;
+function updateSyncView() {
+  const t = audio.currentTime || 0, d = audio.duration || (A && A.duration) || 0;
+  $("#tNow").textContent = fmt(t); $("#tDur").textContent = fmt0(d);
+  $("#seekFill").style.width = d ? (t / d * 100) + "%" : 0;
+  $("#playBtn").textContent = audio.paused ? "▶ Play" : "❚❚ Pause";
+  const i = showingAt(t - (+S.settings.lyric_offset || 0)), ly = $("#syncLyric");
+  styleLyric(ly);
+  setLyricText(ly, i >= 0 ? shown(lines()[i]) : "");
+  if (i !== lastShowing) {
+    $$("#lines .ln.showing").forEach(el => el.classList.remove("showing"));
+    const el = $(`#lines .ln[data-i="${i}"]`); if (el) el.classList.add("showing");
+    lastShowing = i;
+  }
+  const bar = $("#seek");
+  if (d && bar.dataset.n !== String(S.timings.filter(x => x.start != null).length)) {
+    bar.querySelectorAll(".tick").forEach(x => x.remove());
+    S.timings.forEach(x => { if (x.start != null) { const tk = document.createElement("div"); tk.className = "tick"; tk.style.left = (x.start / d * 100) + "%"; bar.appendChild(tk); } });
+    bar.dataset.n = S.timings.filter(x => x.start != null).length;
+  }
+}
+(function loop() {
+  if (S && tab === "sync") { updateSyncView(); followVideo(); }
+  if (S && tab === "make" && sectionStop) { drawRange(); if (audio.currentTime >= sectionStop) stopSection(); }
+  requestAnimationFrame(loop);
+})();
+audio.addEventListener("play", updateSyncView); audio.addEventListener("pause", updateSyncView);
+
+// ---------- make: range
+function limits() {
+  // the part of the song you can use: all of it, or only what the performance video covers
+  if (!A) return [0, 0];
+  if (perf() && P) return [Math.max(0, P.covers[0]), Math.min(A.duration, P.covers[1])];
+  return [0, A.duration];
+}
+function range() {
+  if (!A) return [0, 30];
+  const [lo, hi] = limits();
+  let s = S.settings.start, e = S.settings.end;
+  if (s == null || s === "auto" || e == null || e === "auto") {
+    const len = Math.min(30, hi - lo);
+    s = A.peak["30"] ?? lo; e = s + len;
+  }
+  s = Math.max(lo, Math.min(+s, hi - 1)); e = Math.max(s + 1, Math.min(+e, hi));
+  return [s, e];
+}
+function setRange(s, e, persist = true) {
+  const [lo, hi] = limits();
+  s = Math.max(lo, Math.min(s, hi - 1)); e = Math.max(s + 1, Math.min(e, hi));
+  S.settings.start = +s.toFixed(2); S.settings.end = +e.toFixed(2);
+  if (persist) save({ settings: { start: S.settings.start, end: S.settings.end } });
+  drawRange();
+}
+function drawRange() {
+  if (!A) return;
+  const [s, e] = range(), dur = A.duration, [lo, hi] = limits();
+  $("#rStart").textContent = fmt(s); $("#rEnd").textContent = fmt(e); $("#rLen").textContent = (e - s).toFixed(1) + "s";
+  const a = $("#rangeA"), b = $("#rangeB");
+  a.max = b.max = dur.toFixed(1);
+  if (document.activeElement !== a) a.value = s;
+  if (document.activeElement !== b) b.value = e;
+  $("#dualSel").style.left = (s / dur * 100) + "%"; $("#dualSel").style.width = ((e - s) / dur * 100) + "%";
+  const cv = $("#energy"), ctx = cv.getContext("2d"), W = cv.width, H = cv.height, en = A.energy, n = en.length;
+  ctx.clearRect(0, 0, W, H);
+  const x0 = s / dur * W, x1 = e / dur * W, bw = W / n;
+  ctx.fillStyle = "rgba(255,179,212,.10)"; ctx.fillRect(x0, 0, x1 - x0, H);
+  for (let i = 0; i < n; i++) {
+    const x = i * bw, h = 10 + en[i] * (H - 40), inside = x >= x0 && x < x1, usable = i >= lo - 1 && i <= hi;
+    ctx.fillStyle = !usable ? "#18181a" : inside ? "#ffb3d4" : "#38383d";
+    ctx.fillRect(x + 1, H - 18 - h, Math.max(1, bw - 2), h);
+  }
+  ctx.fillStyle = "#fff1a6";
+  S.timings.forEach(t => { if (t.start != null) ctx.fillRect(t.start / dur * W, H - 14, 2, 10); });
+  ctx.fillStyle = "#ffb3d4";
+  ctx.fillRect(x0 - 3, 0, 6, H); ctx.fillRect(x1 - 3, 0, 6, H);
+  ctx.fillStyle = "#fff";
+  [x0, x1].forEach(x => { ctx.beginPath(); ctx.arc(x, H / 2, 9, 0, 7); ctx.fill(); });
+  if (sectionStop) { const px = audio.currentTime / dur * W; ctx.fillStyle = "#39ff88"; ctx.fillRect(px - 1, 0, 3, H); }
+}
+$("#rangeA").addEventListener("input", e => { const [, en] = range(); setRange(Math.min(+e.target.value, en - 1), en); });
+$("#rangeB").addEventListener("input", e => { const [st] = range(); setRange(st, Math.max(+e.target.value, st + 1)); });
+(function canvasDrag() {
+  const cv = $("#energy");
+  let mode = null, grabT = 0, orig = null;
+  const tAt = ev => { const r = cv.getBoundingClientRect(); return (ev.clientX - r.left) / r.width * (A ? A.duration : 1); };
+  cv.addEventListener("pointerdown", ev => {
+    if (!A) return;
+    const t = tAt(ev), [s, e] = range(), px = A.duration / cv.getBoundingClientRect().width;
+    if (Math.abs(t - s) < 10 * px) mode = "s";
+    else if (Math.abs(t - e) < 10 * px) mode = "e";
+    else if (t > s && t < e) mode = "move";
+    else mode = t < s ? "s" : "e";
+    grabT = t; orig = [s, e];
+    cv.setPointerCapture(ev.pointerId);
+    move(ev);
+  });
+  function move(ev) {
+    if (!mode) return;
+    const t = tAt(ev), [s, e] = orig;
+    if (mode === "s") setRange(Math.min(t, e - 1), e, false);
+    else if (mode === "e") setRange(s, Math.max(t, s + 1), false);
+    else { const [lo, hi] = limits(), len = e - s; const ns = Math.max(lo, Math.min(s + t - grabT, hi - len)); setRange(ns, ns + len, false); }
+  }
+  cv.addEventListener("pointermove", ev => {
+    if (mode) return move(ev);
+    if (!A) return;
+    const t = tAt(ev), [s, e] = range(), px = A.duration / cv.getBoundingClientRect().width;
+    cv.style.cursor = Math.abs(t - s) < 10 * px || Math.abs(t - e) < 10 * px ? "ew-resize" : t > s && t < e ? "grab" : "pointer";
+  });
+  cv.addEventListener("pointerup", () => { if (mode) { mode = null; save({ settings: { start: S.settings.start, end: S.settings.end } }); if (!lastVideo) samplePreview(); } });
+})();
+$$("[data-len]").forEach(c => c.onclick = () => {
+  const [s] = range(), [, hi] = limits(), len = +c.dataset.len;
+  setRange(s, len ? s + len : hi);
+});
+$("#peakBtn").onclick = () => {
+  if (!A) return;
+  const [lo, hi] = limits(), len = Math.min(30, hi - lo);
+  let s = A.peak["30"];
+  if (perf() && P) {
+    // loudest 30 s inside what the video covers
+    let best = lo, bestSum = -1;
+    for (let t = Math.ceil(lo); t + len <= hi; t++) { let sum = 0; for (let k = t; k < t + len; k++) sum += A.energy[k] || 0; if (sum > bestSum) { bestSum = sum; best = t; } }
+    s = best;
+  }
+  setRange(s, s + len);
+};
+function stopSection() { audio.pause(); sectionStop = null; $("#secPlay").textContent = "▶ Listen"; drawRange(); }
+$("#secPlay").onclick = () => {
+  if (sectionStop) return stopSection();
+  if (!A) return;
+  const [s, e] = range();
+  audio.currentTime = s; sectionStop = e;
+  audio.playbackRate = 1; audio.play(); $("#secPlay").textContent = "■ Stop";
+};
+
+// ---------- make: options
+function setSetting(k, v) { S.settings[k] = v; save({ settings: { [k]: v } }); syncSettingsUI(); }
+function syncSettingsUI() {
+  $$("[data-set]").forEach(g => g.querySelectorAll(".chip").forEach(c => c.classList.toggle("on", String(S.settings[g.dataset.set]) === c.dataset.v)));
+  $("#offset").value = $("#offset2").value = S.settings.lyric_offset;
+  const o = +S.settings.lyric_offset;
+  $("#offVal").textContent = $("#offVal2").textContent = o === 0 ? "· exactly on your taps" : `· ${Math.abs(o).toFixed(2)}s ${o < 0 ? "before" : "after"} your taps`;
+  const f = +S.settings.framing;
+  $("#framing").value = f;
+  $("#frameVal").textContent = f === 0.5 ? "· centred" : `· ${f < 0.5 ? "left" : "right"} ${Math.round(Math.abs(f - 0.5) * 200)}%`;
+  const c = (S.settings.text_color || "#ffffff").toLowerCase();
+  $$(".sw").forEach(sw => sw.classList.toggle("on", sw.dataset.c === c));
+  $("#colorPick").value = c;
+  applyFraming();
+  if (tab === "make" && !lastVideo) samplePreview();
+}
+function applyFraming() { sv.style.objectPosition = `${S.settings.framing * 100}% 50%`; }
+$$("[data-set]").forEach(g => g.addEventListener("click", e => {
+  const c = e.target.closest(".chip"); if (!c || !c.dataset.v) return;
+  if (e.target.closest(".rm")) return removeFont(c, e);
+  if (g.dataset.set === "text_style") S.settings.text_effect = SUGGESTED_EFFECT[c.dataset.v] || "shadow";
+  if (g.dataset.set === "text_style") save({ settings: { text_effect: S.settings.text_effect } });
+  setSetting(g.dataset.set, c.dataset.v);
+}));
+$$(".sw").forEach(sw => sw.onclick = () => setSetting("text_color", sw.dataset.c));
+$("#colorPick").oninput = e => setSetting("text_color", e.target.value);
+$("#offset").oninput = $("#offset2").oninput = e => setSetting("lyric_offset", +e.target.value);
+$("#offset2").onchange = e => e.target.blur();  // hand Space back to tapping
+$("#framing").oninput = e => setSetting("framing", +e.target.value);
+let frameN = 0, frameKey = "";
+function samplePreview(newFrame) {
+  // before a video is made, show the lyrics on a real frame of your footage
+  const scr = $("#outScreen");
+  if (!scr.querySelector(".lyric")) {
+    scr.innerHTML = '<img class="bg" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover"><div class="lyric"><span></span></div>' +
+      '<button class="btn small" id="newFrame" style="position:absolute;bottom:10px;right:10px;z-index:3">↻ Another frame</button>';
+    scr.querySelector("#newFrame").onclick = () => samplePreview(true);
+    frameKey = "";
+  }
+  if (newFrame) frameN++;
+  const [s0] = range();
+  const key = `${S.mode}|${frameN}|${S.settings.framing}|${perf() ? Math.round(s0) : ""}`;
+  if (key !== frameKey) {
+    frameKey = key;
+    const img = scr.querySelector("img.bg");
+    img.onerror = () => { img.style.display = "none"; };
+    img.onload = () => { img.style.display = ""; };
+    setImageFrom(img, `/api/frame?n=${frameN}&t=${s0}&framing=${S.settings.framing}&k=${Date.now()}`);
+  }
+  const ly = scr.querySelector(".lyric");
+  styleLyric(ly);
+  setLyricText(ly, shown(lines().find(l => l.length > 18) || lines()[0] || "Your lyrics go here"));
+}
+
+// ---------- make: render
+async function render(reroll) {
+  if (sectionStop) stopSection();
+  if (reroll) S.settings.seed = (+S.settings.seed || 0) + 1;
+  const [s, e] = range();
+  S.settings.start = s; S.settings.end = e;
+  save({ settings: { start: s, end: e, seed: S.settings.seed } });
+  await flush();
+  const st = $("#status");
+  st.innerHTML = S.timings.some(t => t.start != null) ? "" : '<div class="warn">No lyrics are synced yet, so the video will have no text.</div>';
+  $("#renderBtn").disabled = $("#rerollBtn").disabled = true;
+  st.insertAdjacentHTML("beforeend", '<div class="progress"><div id="pbar"></div></div><div class="note" id="pmsg">Starting…</div>');
+  const t0 = Date.now();
+  try {
+    const { id } = await api("/api/render", { settings: S.settings });
+    while (true) {
+      await new Promise(r => setTimeout(r, 700));
+      const j = await api("/api/job?id=" + id);
+      $("#pbar").style.width = (j.frac * 100) + "%";
+      $("#pmsg").textContent = j.msg + ` · ${Math.round((Date.now() - t0) / 1000)}s`;
+      if (j.status === "done") {
+        const what = j.result.shots ? ` · ${j.result.shots} cuts` : "";
+        st.innerHTML = `<div class="note">Done in ${Math.round((Date.now() - t0) / 1000)}s${what} · saved to ${friendlyPath(j.result.folder)}</div>`;
+        play(j.result.name); loadRecent(); break;
+      }
+      if (j.status === "error") { st.innerHTML = `<div class="err">${j.error.replace(/</g, "&lt;")}</div>`; break; }
+      if (j.status === "missing") { st.innerHTML = '<div class="err">Lost track of the render. Is the app still running?</div>'; break; }
+    }
+  } catch (err) { st.innerHTML = `<div class="err">${err.message}</div>`; }
+  $("#renderBtn").disabled = $("#rerollBtn").disabled = false;
+}
+$("#renderBtn").onclick = () => render(false);
+$("#rerollBtn").onclick = () => render(true);
+$("#backToPreview").onclick = () => { lastVideo = null; $("#outScreen").innerHTML = ""; $("#backToPreview").style.display = "none"; samplePreview(); };
+$("#outReset").onclick = async () => {
+  await api("/api/output/default", {});
+  S = { ...S, ...(await api("/api/state")) }; showOutDir(); loadRecent();
+  toast("Videos will be saved to " + friendlyPath(S.output_dir) + ".");
+};
+$("#revealBtn").onclick = () => api("/api/reveal", { name: lastVideo || "" });
+function play(name) {
+  lastVideo = name;
+  $("#backToPreview").style.display = "";
+  $("#outScreen").innerHTML = `<video controls autoplay playsinline src="${mediaURL("/video/" + encodeURIComponent(name))}"></video>`;
+  $$("#recent button").forEach(b => b.classList.toggle("on", b.dataset.name === name));
+}
+async function loadRecent() {
+  const list = await api("/api/renders");
+  $("#recent").innerHTML = list.length ? "" : '<div class="note">None yet</div>';
+  list.forEach(f => {
+    const b = document.createElement("button");
+    b.dataset.name = f.name; b.textContent = f.name.replace(/\.mp4$/, "");
+    b.classList.toggle("on", f.name === lastVideo);
+    b.onclick = () => play(f.name);
+    $("#recent").appendChild(b);
+  });
+}
+
+// always open on "What are you making?" (the last choice is highlighted)
+// chip descriptions ("soft dark halo", …) also show on hover, for when they're hidden to save space
+$$(".chip").forEach(c => { const sm = c.querySelector("small"); if (sm && !c.title) c.title = c.textContent.replace(sm.textContent, "").trim() + " — " + sm.textContent.trim(); });
+
+// ---------- fit the phone preview into whatever height its column has left
+function fitScreens() {
+  const wide = matchMedia("(min-width: 861px)").matches;
+  $$("section.on .phone").forEach(phone => {
+    const scr = phone.querySelector(".screen");
+    if (!scr) return;
+    if (!wide) { scr.style.height = scr.style.width = ""; return; }
+    const rem = parseFloat(getComputedStyle(document.documentElement).fontSize), cs = getComputedStyle(phone);
+    let rest = 0;
+    [...phone.children].forEach(ch => { if (ch !== scr && ch.offsetParent !== null) { const st = getComputedStyle(ch); rest += ch.offsetHeight + parseFloat(st.marginTop) + parseFloat(st.marginBottom); } });
+    const room = phone.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom) - rest - 2;
+    const h = Math.max(11 * rem, Math.min(room, 42 * rem, phone.clientWidth * 16 / 9));
+    if (Math.abs(h - scr.offsetHeight) > 1) { scr.style.height = h + "px"; scr.style.width = (h * 9 / 16) + "px"; }
+  });
+}
+addEventListener("resize", () => { fitScreens(); if (typeof drawRange === "function") drawRange(); if (ft) drawFineTune(); });
+// re-fit when anything else in a preview column changes size (status messages, recent list…)
+const fitWatch = new ResizeObserver(() => requestAnimationFrame(fitScreens));
+$$(".phone").forEach(phone => { fitWatch.observe(phone); [...phone.children].forEach(ch => { if (!ch.classList.contains("screen")) fitWatch.observe(ch); }); });
+
+loadState().then(() => go("start"));
+</script>
+<script src="tweaks.js"></script>
+</body>
+</html>
