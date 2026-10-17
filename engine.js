@@ -270,7 +270,7 @@ function lyricEvents(lines, timings, start, length, style, offset) {
   lines.forEach((line, i) => {
     const tm = timings[i]; if (!tm || tm.start == null) return;
     let s = tm.start + offset, e = tm.end;
-    if (e == null) { let nxt = null; for (let j = i + 1; j < timings.length; j++) if (timings[j] && timings[j].start != null) { nxt = timings[j].start; break; } e = nxt != null ? Math.min(nxt + offset, s + 6) : s + 4; } else e += offset;
+    if (e == null) { let nxt = null; for (let j = i + 1; j < timings.length; j++) if (timings[j] && timings[j].start != null) { nxt = timings[j].start; break; } e = nxt != null ? nxt + offset : start + length; }  // until the next line; the last one until the end else e += offset;
     s -= start; e -= start;
     if (e <= 0 || s >= length) return;
     s = Math.max(0, s); e = Math.min(length, e); if (e - s < 0.15) return;

@@ -91,10 +91,13 @@ body.m-clips span[data-mode~="clips"], body.m-performance span[data-mode~="perfo
 .ln .t button { opacity: 0; background: var(--panel2); border: 1px solid var(--line); color: var(--text); border-radius: 0.375rem; width: 1.375rem; height: 1.375rem; cursor: pointer; font-size: 0.75rem; padding: 0; }
 .ln:hover .t button { opacity: 1; }
 .ln.timed .t span { color: var(--neon); }
-.ln.cur { border-color: var(--accent); background: var(--pink-soft); padding: 0.875rem 0.75rem; margin: 0.375rem 0; }
-.ln.cur .x { font-size: 1.625rem; font-weight: 700; color: #fff; line-height: 1.25; }
-.ln.cur .i { font-size: 0.875rem; }
+/* big: the line being sung (or, when nothing is showing, the next one to tap) */
+.ln.big { border-color: var(--accent); background: var(--pink-soft); padding: 0.875rem 0.75rem; margin: 0.375rem 0; }
+.ln.big .x { font-size: 1.625rem; font-weight: 700; color: #fff; line-height: 1.25; }
+.ln.big .i { font-size: 0.875rem; }
+/* cur: the next line to tap */
 .ln.cur .i::before { content: "▶ "; color: var(--accent); }
+.ln.cur:not(.big) { border-color: rgba(255,179,212,.35); }
 .ln.showing .x { color: #fff; font-weight: 600; }
 .ln .end { color: var(--warn); font-size: 0.6875rem; margin-left: 0.25rem; }
 .gap { height: 0.75rem; }
@@ -781,8 +784,9 @@ function lineEnd(i) {
   const t = S.timings[i];
   if (!t || t.start == null) return null;
   if (t.end != null) return t.end;
-  for (let j = i + 1; j < S.timings.length; j++) if (S.timings[j].start != null) return Math.min(S.timings[j].start, t.start + 6);
-  return t.start + 4;
+  // a line stays up until the next one starts (or until you clear it with Enter); the last one until the song ends
+  for (let j = i + 1; j < S.timings.length; j++) if (S.timings[j].start != null) return S.timings[j].start;
+  return Infinity;
 }
 function showingAt(time) {
   let best = -1;
@@ -864,13 +868,13 @@ function removeFont(chip, e) {
 }
 function setLyricText(el, text) { el.firstElementChild.textContent = text; el.style.visibility = text ? "" : "hidden"; }
 function renderLines() {
-  const ls = lines(), raw = S.lyrics.split("\n");
+  const ls = lines(), raw = S.lyrics.split("\n"), big = bigLine();
   let k = 0, html = "", prevBlank = false;
   for (const r of raw) {
     if (!r.trim()) continue;
     prevBlank = false;
     const t = S.timings[k];
-    html += `<div class="ln ${t.start != null ? "timed" : ""} ${k === cur ? "cur" : ""}" data-i="${k}">
+    html += `<div class="ln ${t.start != null ? "timed" : ""} ${k === cur ? "cur" : ""} ${k === big ? "big" : ""}" data-i="${k}">
       <span class="i">${k + 1}</span><span class="x"></span>
       <span class="t"><button data-n="-0.05" title="Earlier">−</button><span>${t.start != null ? fmt(t.start) : "—"}</span><button data-n="0.05" title="Later">+</button>${t.end != null ? '<span class="end" title="Ends early (Enter)">■</span>' : ""}${t.snapped || t.manual ? '<span class="snap" title="Lined up with the vocal">●</span>' : ""}</span></div>`;
     k++;
@@ -1029,9 +1033,19 @@ $("#ftPlay").onclick = () => {
   tick();
 };
 
+// the big line in the list: the one being sung right now (same as the preview). Between lines it's the next
+// lyric coming up, or the next line to tap if nothing after this point is timed yet.
+function bigLine(i) {
+  const t = (audio.currentTime || 0) - (+S.settings.lyric_offset || 0);
+  if (i === undefined) i = showingAt(t);
+  if (i >= 0) return i;
+  let up = -1;
+  S.timings.forEach((x, j) => { if (x.start != null && x.start > t && (up < 0 || x.start < S.timings[up].start)) up = j; });
+  return up >= 0 ? up : Math.min(cur, lines().length - 1);
+}
 function scrollToCur(instant) {
-  // keep the line you're about to tap in the middle of the list
-  const el = $(`#lines .ln[data-i="${Math.min(cur, lines().length - 1)}"]`);
+  // keep the big line in the middle of the list
+  const el = $(`#lines .ln[data-i="${bigLine()}"]`);
   if (!el) return;
   const box = $("#lines");
   const top = el.getBoundingClientRect().top - box.getBoundingClientRect().top + box.scrollTop;
@@ -1099,7 +1113,7 @@ function followVideo() {
     if (Math.abs(sv.currentTime - want) > 0.25) sv.currentTime = want;
   }
 }
-let lastShowing = -2;
+let lastShowing = -2, lastBig = -2;
 function updateSyncView() {
   const t = audio.currentTime || 0, d = audio.duration || (A && A.duration) || 0;
   $("#tNow").textContent = fmt(t); $("#tDur").textContent = fmt0(d);
@@ -1112,6 +1126,14 @@ function updateSyncView() {
     $$("#lines .ln.showing").forEach(el => el.classList.remove("showing"));
     const el = $(`#lines .ln[data-i="${i}"]`); if (el) el.classList.add("showing");
     lastShowing = i;
+  }
+  const big = bigLine(i);
+  if (big !== lastBig) {  // the line being sung changed: make it the big one and keep it centred
+    $$("#lines .ln.big").forEach(el => el.classList.remove("big"));
+    const el = $(`#lines .ln[data-i="${big}"]`); if (el) el.classList.add("big");
+    const first = lastBig === -2;
+    lastBig = big;
+    if (!first) scrollToCur();
   }
   const bar = $("#seek");
   if (d && bar.dataset.n !== String(S.timings.filter(x => x.start != null).length)) {
