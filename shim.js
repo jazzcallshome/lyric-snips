@@ -44,10 +44,15 @@ function pick({ accept, multiple, folder }) {
   return new Promise(resolve => {
     const inp = document.createElement("input"); inp.type = "file";
     if (accept) inp.accept = accept; if (multiple) inp.multiple = true; if (folder) { inp.webkitdirectory = true; inp.multiple = true; }
-    let done = false; const finish = v => { if (!done) { done = true; resolve(v); } };
-    inp.addEventListener("change", () => finish([...inp.files]));
+    // Wait for the browser's own answer: "change" once the files are handed over, "cancel" if the person backs out.
+    // (No timer: after a folder is chosen, Chrome and Edge first ask "Upload N files?" and big folders take a while
+    // to list, so the files can arrive many seconds after the picker window closes.)
+    inp.style.display = "none"; document.body.appendChild(inp);  // some browsers only open pickers for inputs on the page
+    let done = false; const finish = v => { if (!done) { done = true; inp.remove(); resolve(v); } };
+    inp.addEventListener("change", () => finish(inp.files.length ? [...inp.files] : null));
     inp.addEventListener("cancel", () => finish(null));
-    window.addEventListener("focus", () => setTimeout(() => { if (!inp.files.length) finish(null); }, 800), { once: true });
+    if (!("oncancel" in HTMLInputElement.prototype))  // older browsers never say "cancel": guess from the window refocusing
+      window.addEventListener("focus", () => setTimeout(() => { if (!inp.files.length) finish(null); }, 1500), { once: true });
     inp.click();
   });
 }
@@ -157,7 +162,9 @@ async function handle(url, init) {
       if (k === "song") { const f = await pick({ accept: "audio/*,.wav,.mp3,.m4a,.aif,.aiff,.flac" }); if (!f) return json({ cancelled: true });
         F.song = f[0]; ST.songName = F.song.name; ST.songKey = songKey(); store(ST); return json({ path: F.song.name }); }
       if (k === "clips") { const f = await pick({ folder: true }); if (!f) return json({ cancelled: true });
-        F.clips = f.filter(x => VIDEO.test(x.name) && !x.name.startsWith(".")); prescan(); return json({ path: "clips" }); }
+        const vids = f.filter(x => VIDEO.test(x.name) && !x.name.startsWith("."));
+        if (!vids.length) return fail("No video clips found in that folder. The browser version works with .mp4, .mov, .m4v, .webm and .mkv files.");
+        F.clips = vids; prescan(); return json({ path: "clips" }); }
       if (k === "performance") { const f = await pick({ accept: "video/*,.mov,.mp4,.m4v" }); if (!f) return json({ cancelled: true });
         F.performance = f[0]; return json({ path: F.performance.name }); }
       return json({ cancelled: true });
